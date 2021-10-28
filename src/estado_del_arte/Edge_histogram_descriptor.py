@@ -20,6 +20,8 @@ import math
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
 
 # Parametros bash:
 # Nombre de la base de datos en el cluster
@@ -151,6 +153,13 @@ elif CLASSIFIER == 'knn':
   knn = KNeighborsClassifier(n_neighbors)
   knn.fit(histogramas_entrenamiento, labels_entrenamiento)
   _classifier = knn
+elif CLASSIFIER == 'rfc':
+  rfc = RandomForestClassifier(random_state=0)
+  rfc.fit(histogramas_entrenamiento, labels_entrenamiento)
+  _classifier = rfc
+elif CLASSIFIER == 'mlp':
+  clf = MLPClassifier(random_state=0).fit(histogramas_entrenamiento, labels_entrenamiento)
+  _classifier = clf
 
 # PRUEBA
 histogramas_prueba = []

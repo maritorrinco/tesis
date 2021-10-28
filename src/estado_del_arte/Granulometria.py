@@ -19,6 +19,8 @@ import csv
 from scipy.sparse import csr_matrix
 import scipy.sparse
 from sklearn.svm import LinearSVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
 
 # Pruebas a realizar en el cluster para todas las bases de datos:
 # Volumen y Energia, ambos MARGINAL PROCESSING --> ya que fueron los que obtienen mejores resultados en Outex13
@@ -552,6 +554,14 @@ elif CLASSIFIER == 'knn':
   knn = KNeighborsClassifier(n_neighbors)
   knn.fit(histogramas_entrenamiento, labels_entrenamiento)
   _classifier = knn
+elif CLASSIFIER == 'rfc':
+  rfc = RandomForestClassifier(random_state=0)
+  rfc.fit(histogramas_entrenamiento, labels_entrenamiento)
+  _classifier = rfc
+elif CLASSIFIER == 'mlp':
+  max_iter = 1000
+  clf = MLPClassifier(random_state=0, max_iter=max_iter).fit(histogramas_entrenamiento, labels_entrenamiento)
+  _classifier = clf
 
 # PRUEBA
 print("Prueba...")
@@ -598,6 +608,8 @@ print("Creacion de archivos con resultados...")
 now = datetime.now()
 FECHA_HORA = str(now.year) + '-' + str(now.month) + '-' + str(now.day) + '-' + str(now.hour)  + str(now.minute) + str(now.second)
 import scipy.sparse
+if CLASSIFIER == 'mlp':
+  CLASSIFIER = CLASSIFIER + str(max_iter)
 CSV_PATH = "../resultados/granulometriaSVM_" + medida_param + "_" + base_datos_param + '_' + FECHA_HORA + '_' + CLASSIFIER + '_' + canales_param + ".csv"
 
 titulos = ["Exactitud"] # Para imprimir en csv

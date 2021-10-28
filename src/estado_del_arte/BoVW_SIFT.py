@@ -30,6 +30,9 @@ from sklearn.svm import LinearSVC
 import csv
 from datetime import datetime
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.neural_network import MLPClassifier
 
 # Parametros bash:
 # Nombre de la base de datos en el cluster
@@ -38,7 +41,7 @@ print("Base de datos parametro:", base_datos_param)
 # Clasificador
 CLASSIFIER = sys.argv[2]
 print("Clasificador parametro:", CLASSIFIER)
-# random_state
+# random_state (de KMEANS)
 RANDOM_STATE = int(sys.argv[3])
 
 # Funciones
@@ -178,6 +181,17 @@ elif CLASSIFIER == 'knn':
   knn = KNeighborsClassifier(n_neighbors)
   knn.fit(im_features, labels_entrenamiento_sift)
   _classifier = knn
+elif CLASSIFIER == 'rfc':
+  rfc = RandomForestClassifier(random_state=0)
+  rfc.fit(im_features, labels_entrenamiento_sift)
+  _classifier = rfc
+elif CLASSIFIER == 'mnb':
+  model = MultinomialNB()
+  model.fit(im_features, labels_entrenamiento_sift)
+  _classifier = model
+elif CLASSIFIER == 'mlp':
+  clf = MLPClassifier(random_state=0, max_iter=700).fit(im_features, labels_entrenamiento_sift)
+  _classifier = clf
 
 """# **Prueba**
 

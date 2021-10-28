@@ -35,6 +35,15 @@ from scipy.sparse import csr_matrix
 from datetime import datetime
 from sklearn.neighbors import KNeighborsClassifier
 import scipy.sparse
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.neural_network import MLPClassifier
+import sklearn
+print(sklearn.__version__)
+
+# python3 vectores-21.py base_de_datos metodo rango v1 v2 clasificador formato_vector_características
+# python3 vectores-21.py Outex_TC_00013 1 12 2 1 ovsr npz
 
 # PARAMS
 RANGES = [11]
@@ -86,6 +95,9 @@ CLASSIFIER = 'ovsr'
 if len(sys.argv) > 6:
   CLASSIFIER = sys.argv[6]
   print("Clasificador parametro:", CLASSIFIER)
+
+if CLASSIFIER == "mnbs":
+	scaler = MinMaxScaler()
 
 FORMAT_VECT_CAR = 'npz'
 # Posibles valores: csv; npz
@@ -272,9 +284,9 @@ def get_alphabet_size(letras, _range):
   tamAlfabeto = 0
   for i in range(len(valoresPorLetra)):
     array_grises = valoresPorLetra.get(letras[i])
-    tamAlfabeto += 1
     if len(array_grises) == 0:
       break
+    tamAlfabeto += 1
   return tamAlfabeto
 
 def read_images(txt): # txt: archivo.txt
@@ -788,6 +800,25 @@ def train(imagenes, labels_entrenamiento, characters, windows, step, _range):
     knn = KNeighborsClassifier(n_neighbors)
     knn.fit(X, labels_entrenamiento)
     _classifier = knn
+  elif CLASSIFIER == 'rfc':
+    rfc = RandomForestClassifier(random_state=0)
+    rfc.fit(X, labels_entrenamiento)
+    _classifier = rfc
+  elif CLASSIFIER == "nb":
+    gaussian = GaussianNB()
+    gaussian.fit(X.toarray(), labels_entrenamiento)
+    _classifier = gaussian
+  elif CLASSIFIER == 'mnb':
+    model = MultinomialNB()
+    model.fit(X, labels_entrenamiento)
+    _classifier = model
+  elif CLASSIFIER == 'mnbs':
+    model = MultinomialNB()
+    X = scaler.fit_transform(X.toarray())
+    model.fit(X, labels_entrenamiento)
+    _classifier = model
+  elif CLASIFICADOR == "mlp":
+    classifier = MLPClassifier(random_state=0, max_iter=500)
   
   #return svm, vectorizer, vectorizer_B, vectorizer_G, vectorizer_R, tam_diccionario
   return _classifier, vectorizer, vectorizer_B, vectorizer_G, vectorizer_R, tam_diccionario
@@ -823,7 +854,13 @@ def test(imagenes, labels_prueba, _classifier, vectorizer, vectorizer_B, vectori
     scipy.sparse.save_npz(CSV_PRUEBA, histogramas_img_prueba)
 
   print("antes de clasficador - test")
-  predicciones = _classifier.predict(histogramas_img_prueba)
+  if CLASSIFIER == "mnbs":
+    histogramas_img_prueba = scaler.fit_transform(histogramas_img_prueba.toarray())
+    
+  if CLASSIFIER == "nb":
+    predicciones = _classifier.predict(histogramas_img_prueba.toarray())
+  else:
+    predicciones = _classifier.predict(histogramas_img_prueba)
 
   return predicciones
 

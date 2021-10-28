@@ -14,12 +14,16 @@ import numpy as np
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score
 from itertools import product
 from termcolor import colored
 import csv
 import sys
 import scipy.sparse
+from sklearn.preprocessing import MinMaxScaler
 
 
 ################################### Parámetros ###################################
@@ -41,7 +45,7 @@ if len(sys.argv) > 4:
 param_names, param_values = zip(*parametros.items())
 parametros_set = [dict(zip(param_names, h)) for h in product(*param_values)]
 
-CLASIFICADOR = 'svc' # Posibles valores: ovsr; svc; knn
+CLASIFICADOR = 'svc' # Posibles valores: ovsr; svc; knn; rf
 if len(sys.argv) > 5:
 	CLASIFICADOR = sys.argv[5]
 
@@ -50,6 +54,9 @@ if len(sys.argv) > 6:
 	FORMAT_VECT_CAR = sys.argv[6]
 
 print(BASE_DATOS_PARAM, parametros_set, CLASIFICADOR,  FORMAT_VECT_CAR)
+
+if CLASIFICADOR == "mnb":
+	scaler = MinMaxScaler()
 
 
 ########################################## Constantes ######################################
@@ -135,9 +142,12 @@ def mostrar_alfabeto(letras):
 	tamAlfabeto = 0
 	for i in range(len(valoresPorLetra)):
 		array_grises = valoresPorLetra.get(letras[i])
-		tamAlfabeto += 1
 		if len(array_grises) == 0:
 			break
+		tamAlfabeto += 1
+		print(letras[i], "->", array_grises)
+
+	print("Tamaño del Alfabeto:", tamAlfabeto)
 	return tamAlfabeto
 
 def entrenamiento(imagenes_entrenamiento, labels_entrenamiento, letras):
@@ -172,8 +182,18 @@ def entrenamiento(imagenes_entrenamiento, labels_entrenamiento, letras):
 		classifier = KNeighborsClassifier(n_neighbors = 1)
 	elif CLASIFICADOR == "ovsr":
 		classifier = OneVsRestClassifier(SVC(kernel = 'linear'))
+	elif CLASIFICADOR == "rf":
+		classifier = RandomForestClassifier(random_state = 0)
+	elif CLASIFICADOR == "nb":
+		classifier = GaussianNB()
+	elif CLASIFICADOR == "mnb":
+		classifier = MultinomialNB()
+		#X = scaler.fit_transform(X.toarray())
+	elif CLASIFICADOR == "mlp":
+    	classifier = MLPClassifier(random_state=0, max_iter=500)
 		
 	# Entrenar clasificador
+	#classifier.fit(X.toarray(), labels_entrenamiento)
 	classifier.fit(X, labels_entrenamiento)
 	
 	return classifier, vectorizer, tam_diccionario
@@ -200,7 +220,10 @@ def prueba(imagenes_prueba, labels_prueba, classifier, vectorizer, letras):
 	elif FORMAT_VECT_CAR == 'npz':
 		scipy.sparse.save_npz(CSV_PRUEBA, histogramas_img_prueba)
 
-	# Predicciones utilizando SVM
+	# Predicciones
+	#if CLASIFICADOR == "mnb":
+		#histogramas_img_prueba = scaler.fit_transform(histogramas_img_prueba.toarray())
+	#predicciones = classifier.predict(histogramas_img_prueba.toarray())
 	predicciones = classifier.predict(histogramas_img_prueba)
 	# print("Predicciones:\n", predicciones)
 
